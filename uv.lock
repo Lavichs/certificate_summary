@@ -123,6 +123,7 @@ dependencies = [
     { name = "ldap3" },
     { name = "pydantic-settings" },
     { name = "sqlalchemy" },
+    { name = "uvicorn" },
 ]
 
 [package.metadata]
@@ -135,6 +136,7 @@ requires-dist = [
     { name = "ldap3", specifier = ">=2.9.1" },
     { name = "pydantic-settings", specifier = ">=2.12.0" },
     { name = "sqlalchemy", specifier = ">=2.0.45" },
+    { name = "uvicorn", specifier = ">=0.40.0" },
 ]
 
 [[package]]

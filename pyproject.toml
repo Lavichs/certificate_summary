@@ -13,4 +13,5 @@ dependencies = [
     "ldap3>=2.9.1",
     "pydantic-settings>=2.12.0",
     "sqlalchemy>=2.0.45",
+    "uvicorn>=0.40.0",
 ]
