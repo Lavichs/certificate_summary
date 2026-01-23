@@ -1,8 +1,21 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.api.main_router import router
+from src.database.db import delete_tables, create_tables
 
-app = FastAPI(docs_url="/api/docs")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await delete_tables()
+    print("База очищена")
+    await create_tables()
+    print("База готова")
+    yield
+    print("Выключение")
+
+app = FastAPI(lifespan=lifespan, docs_url="/api/docs")
 
 
 app.add_middleware(

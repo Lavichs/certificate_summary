@@ -27,13 +27,12 @@ updated_at = Annotated[
 is_delete = Annotated[bool, mapped_column(nullable=False, default=False)]
 
 
+# ------------------------------------------------
+# Models
+
+
 class BaseModel(DeclarativeBase):
     pass
-
-
-async def get_async_session():
-    async with async_session_maker() as session:
-        yield session
 
 
 class BaseOrmModel(DeclarativeBase):
@@ -64,4 +63,22 @@ class Certificate(BaseOrmModel):
     updated_at: Mapped[updated_at]
 
     is_delete: Mapped[is_delete]
+
+
+# ------------------------------------------------
+# Util functions
+
+
+async def create_tables():
+    async with engine.begin() as conn:
+        await conn.run_sync(BaseModel.metadata.create_all)
+
+async def delete_tables():
+    async with engine.begin() as conn:
+        await conn.run_sync(BaseModel.metadata.drop_all)
+
+async def get_async_session():
+    async with async_session_maker() as session:
+        yield session
+
 
