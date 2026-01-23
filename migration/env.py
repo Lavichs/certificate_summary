@@ -17,6 +17,7 @@ config.set_main_option("sqlalchemy.url", settings.DB_URL_ASYNC + "?async_fallbac
 
 target_metadata = BaseOrmModel.metadata
 
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 

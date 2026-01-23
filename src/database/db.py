@@ -69,12 +69,12 @@ async def create_tables():
     async with engine.begin() as conn:
         await conn.run_sync(BaseOrmModel.metadata.create_all)
 
+
 async def delete_tables():
     async with engine.begin() as conn:
         await conn.run_sync(BaseOrmModel.metadata.drop_all)
 
+
 async def get_async_session():
     async with async_session_maker() as session:
         yield session
-
-

@@ -16,6 +16,7 @@ async def lifespan(app: FastAPI):
     yield
     print("Выключение")
 
+
 app = FastAPI(lifespan=lifespan, docs_url="/api/docs")
 
 
