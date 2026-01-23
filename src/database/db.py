@@ -31,10 +31,6 @@ is_delete = Annotated[bool, mapped_column(nullable=False, default=False)]
 # Models
 
 
-class BaseModel(DeclarativeBase):
-    pass
-
-
 class BaseOrmModel(DeclarativeBase):
     pass
 
