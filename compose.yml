@@ -1,3 +1,73 @@
+services:
+  db:
+    image: postgres:17.7
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5430:5432"
+    networks:
+      - backend
+
+  server:
+    restart: always
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    networks:
+      - backend
+    volumes:
+      - ./src:/app/src
+
+  redis:
+    image: redis:8.4
+    ports:
+      - "6380:6379"
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    command: >
+      sh -c '
+        mkdir -p /usr/local/etc/redis &&
+        echo "bind 0.0.0.0" > /usr/local/etc/redis/redis.conf &&
+        echo "user default on nopass ~* +@all" > /usr/local/etc/redis/users.acl &&
+        redis-server /usr/local/etc/redis/redis.conf --aclfile /usr/local/etc/redis/users.acl
+      '
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "$REDIS_PASSWORD", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
+
+
+volumes:
+  postgres_data:
+
+networks:
+  backend:
+
+
+
+#----------------------------------------------------------------
+
+
+
 #services:
 #  postgres:
 #    image: postgres:13.3
@@ -9,38 +79,3 @@
 #      - "5432:5432"
 
 
-#----------------------------------------------------------------
-
-
-#services:
-#  db:
-#    image: postgres:latest
-#    restart: always
-#    environment:
-#      POSTGRES_DB: ${DB_NAME}
-#      POSTGRES_USER: ${DB_USER}
-#      POSTGRES_PASSWORD: ${DB_PASS}
-#    volumes:
-#      - postgres_data:/var/lib/postgresql/data
-#    ports:
-#      - "5430:5432"
-#    networks:
-#      - backend
-#
-#  server:
-#    restart: always
-#    build: .
-#    ports:
-#      - "8000:8000"
-#    depends_on:
-#      - db
-#    networks:
-#      - backend
-#    volumes:
-#      - ./src:/app/src
-#
-#volumes:
-#  postgres_data:
-#
-#networks:
-#  backend:
