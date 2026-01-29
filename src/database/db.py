@@ -40,7 +40,7 @@ class User(BaseOrmModel):
 
     id: Mapped[uidpk]
     username: Mapped[str]
-    isAdmin: Mapped[bool]
+    isOperator: Mapped[bool]
 
 
 class Certificate(BaseOrmModel):

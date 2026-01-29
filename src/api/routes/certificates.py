@@ -1,16 +1,20 @@
+import json
 import os
 import uuid
-import aiofiles
 import openpyxl
 from datetime import datetime
 from typing import Annotated
 from pathlib import Path
+from redis.asyncio import Redis
 
-from fastapi import APIRouter, Depends, UploadFile
+from fastapi import APIRouter, Depends, UploadFile, Body
+from fastapi.encoders import jsonable_encoder
 
+from config import settings
 from src.schemas.certificate import SCertificateAdd
 from src.services.certificate import CertificateService
-from src.api.depends import certificate_service
+from src.api.depends import certificate_service, get_session_data
+from src.utils.redis_client import get_redis
 
 router = APIRouter(
     prefix="/certificates",
@@ -19,28 +23,60 @@ router = APIRouter(
 
 
 @router.get("")
-async def home():
-    return ""
-
-
-@router.get("/summary")
 async def getSummary(
     certificate_service: Annotated[CertificateService, Depends(certificate_service)],
+    redis: Redis = Depends(get_redis)
 ):
-    return await certificate_service.getAll()
+    cache_data = await redis.get("all_data")
+    if cache_data is None:
+        data = await certificate_service.getAll()
+        await redis.set("all_data", json.dumps(jsonable_encoder(data)), ex=settings.CACHE_LIFETIME)
+        return data
+    return json.loads(cache_data)
+
+
+@router.put("/{id}")
+async def update(
+    certificate_service: Annotated[CertificateService, Depends(certificate_service)],
+    id: str,
+    data=Body(),
+    redis: Redis = Depends(get_redis)
+):
+    result = await certificate_service.update(id, data)
+    data = await certificate_service.getAll()
+    await redis.set("all_data", json.dumps(jsonable_encoder(data)), ex=settings.CACHE_LIFETIME)
+    return result
+
+
+@router.delete("/{id}")
+async def delete_certificate(
+    certificate_service: Annotated[CertificateService, Depends(certificate_service)],
+    id: str,
+    redis: Redis = Depends(get_redis)
+):
+    await certificate_service.delete(id)
+    data = await certificate_service.getAll()
+    await redis.set("all_data", json.dumps(jsonable_encoder(data)), ex=settings.CACHE_LIFETIME)
+    return {"status": "success"}
 
 
 @router.post("/loadxlsx")
 async def updateDatabaseByXlsx(
     uploaded_file: UploadFile,
     certificate_service: Annotated[CertificateService, Depends(certificate_service)],
+    redis: Redis = Depends(get_redis),
+    user_session_data: dict = Depends(get_session_data),
 ):
     upload_folder_path = Path(__file__).resolve().parent.parent.parent.parent
     path_to_file = Path(
-        upload_folder_path, "upload_files", f"{uuid.uuid4()}.{uploaded_file.filename.split('.')[-1]}"
+        upload_folder_path,
+        "upload_files",
+        f"{uuid.uuid4()}.{uploaded_file.filename.split('.')[-1]}",
     )
     with open(path_to_file, "wb") as f:
         f.write(uploaded_file.file.read())
+
+    await certificate_service.deleteAll()
 
     wb_obj = openpyxl.load_workbook(path_to_file)
     sheet_obj = wb_obj.active
@@ -67,5 +103,7 @@ async def updateDatabaseByXlsx(
         await certificate_service.create(scsc)
     os.remove(path_to_file)
 
-    return {"status": "upload"}
+    data = await certificate_service.getAll()
+    await redis.set("all_data", json.dumps(jsonable_encoder(data)), ex=settings.CACHE_LIFETIME)
 
+    return {"status": "upload"}

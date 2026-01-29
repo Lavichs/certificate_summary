@@ -1,7 +1,7 @@
 from typing import List
 import uuid
 from abc import ABC, abstractmethod
-from sqlalchemy import select, insert, update
+from sqlalchemy import select, insert, update, delete
 
 from src.database.db import async_session_maker
 
@@ -29,6 +29,10 @@ class AbstractRepository(ABC):
 
     @abstractmethod
     async def delete(self, id: uuid.UUID) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def deleteAll(self) -> bool:
         raise NotImplementedError
 
 
@@ -92,10 +96,23 @@ class SQLAlchemyRepository(AbstractRepository):
 
     async def delete(self, id: uuid.UUID):
         async with async_session_maker() as session:
+            # stmt = (
+            #     update(self.model)
+            #     .where(self.model.id == id)
+            #     .values({self.model.is_delete: True})
+            # )
             stmt = (
-                update(self.model)
+                delete(self.model)
                 .where(self.model.id == id)
-                .values({self.model.is_delete: True})
+            )
+            result = await session.execute(stmt)
+            await session.commit()
+            return result.rowcount > 0
+
+    async def deleteAll(self):
+        async with async_session_maker() as session:
+            stmt = (
+                delete(self.model)
             )
             result = await session.execute(stmt)
             await session.commit()
