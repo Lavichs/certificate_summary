@@ -9,7 +9,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5430:5432"
+      - "5435:5432"
     networks:
       - backend
 
@@ -17,7 +17,7 @@ services:
     restart: always
     build: .
     ports:
-      - "8000:8000"
+      - "8008:8000"
     depends_on:
       - db
     networks:
@@ -25,7 +25,7 @@ services:
     volumes:
       - ./src:/app/src
 
-  redis:
+  red_cache:
     image: redis:8.4
     ports:
       - "6380:6379"
