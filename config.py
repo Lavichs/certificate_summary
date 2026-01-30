@@ -18,6 +18,9 @@ class Settings(BaseSettings):
 
     ADMIN_PASSWORD: str
 
+    GRAFANA_ADMIN_LOGIN: str
+    GRAFANA_ADMIN_PASSWORD: str
+
     COOKIE_SESSION_ID_KEY: str = "web-app-session-id"
 
     @property
