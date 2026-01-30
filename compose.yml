@@ -86,6 +86,8 @@ services:
 
 volumes:
   postgres_data:
+  grafanadata:
+  prometheusdata:
 
 networks:
   backend:
