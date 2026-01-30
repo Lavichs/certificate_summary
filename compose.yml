@@ -39,6 +39,8 @@ services:
       '
     networks:
       - backend
+    tty: true
+    stdin_open: true
 
 volumes:
   postgres_data:
