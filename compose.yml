@@ -25,6 +25,14 @@ services:
     volumes:
       - ./src:/app/src
 
+  redis:
+    image: redis:8.4
+    restart: always
+    ports:
+      - "6380:6379"
+    networks:
+      - backend
+
 volumes:
   postgres_data:
 
