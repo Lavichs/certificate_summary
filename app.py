@@ -19,11 +19,11 @@ async def lifespan(app: FastAPI):
     service = UserService(UserRepository)
     await service.createAdmin()
     print("Администратор установлен")
-#     redis = await get_redis()
-#     await redis.ping()
-#     print("Redis подключен")
+    redis = await get_redis()
+    await redis.ping()
+    print("Redis подключен")
     yield
-#     await redis.close()
+    await redis.close()
     print("Выключение")
 
 
