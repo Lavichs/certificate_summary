@@ -13,18 +13,6 @@ services:
     networks:
       - backend
 
-  server:
-    restart: always
-    build: .
-    ports:
-      - "8008:8000"
-    depends_on:
-      - db
-    networks:
-      - backend
-    volumes:
-      - ./src:/app/src
-
   redis:
     image: redis:8.4
     restart: always
@@ -41,6 +29,19 @@ services:
       - backend
     tty: true
     stdin_open: true
+
+  server:
+    restart: always
+    build: .
+    ports:
+      - "8008:8000"
+    depends_on:
+      - db
+      - redis
+    networks:
+      - backend
+    volumes:
+      - ./src:/app/src
 
 volumes:
   postgres_data:
