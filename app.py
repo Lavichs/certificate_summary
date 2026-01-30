@@ -16,9 +16,9 @@ async def lifespan(app: FastAPI):
     print("База очищена")
     await create_tables()
     print("База готова")
-#     service = UserService(UserRepository)
-#     await service.createAdmin()
-#     print("Администратор установлен")
+    service = UserService(UserRepository)
+    await service.createAdmin()
+    print("Администратор установлен")
 #     redis = await get_redis()
 #     await redis.ping()
 #     print("Redis подключен")
@@ -36,7 +36,7 @@ app.add_middleware(
     allow_credentials=True
 )
 
-# app.include_router(router)
+app.include_router(router)
 
 
 @app.get("")
